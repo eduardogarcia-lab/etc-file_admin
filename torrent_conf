@@ -1,0 +1,13 @@
+torrent_file_folder="/var/www/filegator/torrents/"
+
+torrent_map_folder="/var/www/filegator/torrents_map_folder/"
+
+torrent_mid_file="/var/www/filegator/torrent_info"
+
+torrent_repository="/var/www/filegator/repository/"
+
+max_days_transmission=2
+
+max_days_on_computer=3
+
+

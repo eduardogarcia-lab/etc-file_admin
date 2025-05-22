@@ -1,0 +1,11 @@
+#Cantidad máxima de torrents almacenados 
+
+torrent_file_folder="/var/www/filegator/torrents/"
+
+torrent_dir_folder="/var/www/filegator/torrents_folder/"
+
+torrent_map_folder="/var/www/filegator/torrents_map_folder/"
+
+torrent_mid_file="/var/www/filegator/torrent_info"
+
+max_torrents=10
