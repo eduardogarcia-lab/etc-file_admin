@@ -1,0 +1,13 @@
+mv file_admin.service /lib/systemd/system/
+cp templates/plantilla_torrent.txt /var/www/filegator/repository/
+chmod 666 /var/www/filegator/repository/plantilla_torrent.txt
+mkdir /var/www/filegator/torrents/
+chmod 777 /var/www/filegator/torrents/
+mkdir /var/www/filegator/torrents_map_folder/
+chmod 777 /var/www/filegator/torrents_map_folder/
+echo '{
+    "rpc-enabled": true,
+    "rpc-authentication-required": false,
+    "lpd-enabled": true,
+    "utp-enabled": false
+}' > /www/var/filegator/torrents/settings.json

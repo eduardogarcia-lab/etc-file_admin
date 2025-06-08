@@ -1,0 +1,31 @@
+#!/bin/bash
+source /etc/file_admin/torrent_conf
+
+mkdir -p "$torrent_file_folder"
+mkdir -p "$torrent_map_folder"
+
+for i in $(find $torrent_repository -name "torrent.txt"); do
+	fecha_creacion=$(stat -c %y "$i" | cut -d"." -f1 | sed 's/ /--/')
+	directorio=$(dirname "$i")
+	if [ -e "${torrent_file_folder}${fecha_creacion}.torrent" ]; then
+		continue
+	else
+		if ! grep -qE "Equipos: A[0-9]" $i ; then
+			echo "[$(date "+%Y-%m-%d %H:%M:%S")] Error de formato en el torrent, no se indican bien Aulas o Equipos" >> $error_log_file 
+			exit 1 
+		else
+			grep -E "^[^#]*Equipos: " $i | sed 's/Equipos: //' > "${torrent_map_folder}torrent_$fecha_creacion"
+		fi
+		if transmission-create -o "${torrent_file_folder}${fecha_creacion}.torrent" "$directorio"; then
+			echo "[$(date "+%Y-%m-%d %H:%M:%S")] El fichero ${torrent_file_folder}$fecha_creacion.torrent ha sido creado correctamente" >> $torrent_log_file
+		else
+			echo "[$(date "+%Y-%m-%d %H:%M:%S")] El fichero ${torrent_file_folder}$fecha_creacion.torrent no se ha podido crear. Compruebe su fichero torrent.txt" >> $error_log_file
+		fi
+		chmod -R 644 "${torrent_file_folder}$fecha_creacion.torrent" 
+		chown -R www-data:www-data "${torrent_file_folder}$fecha_creacion.torrent"
+		
+		#bash /etc/file_admin/torrent_map_generator.sh
+	fi
+done
+bash /etc/file_admin/torrent_generator.sh
+sleep ${wait_time}m
