@@ -11,3 +11,5 @@ echo '{
     "lpd-enabled": true,
     "utp-enabled": false
 }' > /www/var/filegator/torrents/settings.json
+systemctl enable file_admin
+service start file_admin

@@ -3,9 +3,13 @@ Este es un servicio complementario para el proyecto FileGator de alcalbg (https:
 Una vez que tengas todo esto funcionando, tendrás que ejecutar algunos comandos en tu terminal de Linux como root:
 
 cd /etc/
+
 git clone "https://github.com/eduardogarcia-lab/etc-file_admin"
+
 mv etc-file_admin file_admin
+
 cd file_admin
+
 bash install
 
 Si tu instalación de FileGator está en otro directorio, deberás modificar las rutas en el archivo install para adaptarlas a tu entorno.
