@@ -1,0 +1,20 @@
+#Para utilizar la plantilla adecuadamente tendrás que copiar y pegarla
+#en la carpeta donde se encuentren los ficheros que quieres enviar y renombrarla
+#a "torrent.txt"
+#De esta manera, se creara un torrent con todos los archivos de la carpeta
+
+#Para indicar que equipos o aulas van a descargar los ficheros, se indicara
+#De la misma manera, con salto de linea entre cada entrada y de esta manera
+#Equipos: A1 (toda la primera planta)
+#Equipos: A11 (el aula 11 entera)
+#Equipos: A11PC1 (la primera fila del aula 11)
+#Equipos: A11PC11 (el equipo 11 del aula 11)
+
+Equipos: 
+
+#Por último, hay que indicar que la transmisión este activa con el siguiente parametro
+#Para no saturar la red, hay que parar la transmisión manualmente cuando se termine
+#En caso de no hacerlo, dejará de transmitir 2 dias despues de activarla
+#Los indicadores serán "activa/inactiva"
+
+Transmision: activa
