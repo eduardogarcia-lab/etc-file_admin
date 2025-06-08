@@ -1,6 +1,8 @@
 mv file_admin.service /lib/systemd/system/
 cp templates/plantilla_torrent.txt /var/www/filegator/repository/
 chmod 666 /var/www/filegator/repository/plantilla_torrent.txt
+mkdir /var/log/file_admin/
+chmod 755 /var/log/file_admin/
 mkdir /var/www/filegator/torrents/
 chmod 777 /var/www/filegator/torrents/
 mkdir /var/www/filegator/torrents_map_folder/
