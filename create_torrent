@@ -1,31 +1,63 @@
 #!/bin/bash
+
+##################################################################################
+#
+#    Nombre: create_torrent
+#    Descripcion: Busca los ficheros torrent.txt y crea los respectivos torrents
+#    Autor: Eduardo García (edugarcia.fpc3@gmail.com)
+#    Fecha de creación: 2025-06-09
+#    Versión: 1.0
+#    Última modificación: 2025-06-09 
+#
+##################################################################################
+
+#Llama al fichero a todas las variables de entorno
 source /etc/file_admin/torrent_conf
 
-mkdir -p "$torrent_file_folder"
-mkdir -p "$torrent_map_folder"
+#Inicia el bucle infinito que va a estar ejecutandose mientras que el servicio este activo (en principio siempre)
+while true; do
 
-for i in $(find $torrent_repository -name "torrent.txt"); do
-	fecha_creacion=$(stat -c %y "$i" | cut -d"." -f1 | sed 's/ /--/')
-	directorio=$(dirname "$i")
-	if [ -e "${torrent_file_folder}${fecha_creacion}.torrent" ]; then
-		continue
-	else
-		if ! grep -qE "Equipos: A[0-9]" $i ; then
-			echo "[$(date "+%Y-%m-%d %H:%M:%S")] Error de formato en el torrent, no se indican bien Aulas o Equipos" >> $error_log_file 
-			exit 1 
-		else
-			grep -E "^[^#]*Equipos: " $i | sed 's/Equipos: //' > "${torrent_map_folder}torrent_$fecha_creacion"
-		fi
-		if transmission-create -o "${torrent_file_folder}${fecha_creacion}.torrent" "$directorio"; then
-			echo "[$(date "+%Y-%m-%d %H:%M:%S")] El fichero ${torrent_file_folder}$fecha_creacion.torrent ha sido creado correctamente" >> $torrent_log_file
-		else
-			echo "[$(date "+%Y-%m-%d %H:%M:%S")] El fichero ${torrent_file_folder}$fecha_creacion.torrent no se ha podido crear. Compruebe su fichero torrent.txt" >> $error_log_file
-		fi
-		chmod -R 644 "${torrent_file_folder}$fecha_creacion.torrent" 
-		chown -R www-data:www-data "${torrent_file_folder}$fecha_creacion.torrent"
-		
-		#bash /etc/file_admin/torrent_map_generator.sh
-	fi
+    #En caso de que las carpetas donde se almacenan los mapas y los torrents no esten creados, los crea	
+    mkdir -p "$torrent_file_folder"
+    mkdir -p "$torrent_map_folder"
+    
+    #Para cada fichero que encuentre en el repositorio con nombre torrent.txt, saca la fecha en la que fue modificado por ultima vez y saca el directorio en el que se encuentra
+    for i in $(find $torrent_repository -name "torrent.txt"); do
+        fecha_creacion=$(stat -c %y "$i" | cut -d"." -f1 | sed 's/ /--/')
+        directorio=$(dirname "$i")
+	
+	#Si encuentra que ya hay un torrent para ese torrent.txt, pasa a la siguiente iteración del bucle
+        if [ -e "${torrent_file_folder}${fecha_creacion}.torrent" ]; then
+		echo "[$(date "+%Y-%m-%d %H:%M:%S")] El fichero $i ya tiene su respectivo torrent funcionando" | tee -a $torrent_log_file
+        	continue
+        else
+	    #En caso de que no lo encuentre, comprueba que el formato este bien puesto en el torrent txt.
+            if ! grep -qE "Equipos: A[0-9]" $i ; then
+                echo "[$(date "+%Y-%m-%d %H:%M:%S")] Error de formato en el torrent, no se indican bien Aulas o Equipos" | tee -a $error_log_file
+                continue
+            else
+		#Si encuentra que si esta bien puesto el formato, crea el mapa para este torrent	   
+                grep -E "^[^#]*Equipos: " $i | sed 's/Equipos: //' > "${torrent_map_folder}torrent_$fecha_creacion"
+		echo "[$(date "+%Y-%m-%d %H:%M:%S")] Mapa ${torrent_map_folder}torrent_$fecha_creacion creado" | tee -a $torrent_log_file
+            fi
+	    
+	    #Crea el directorio en el que se va a guardar el settings.json de ese torrent y crea el torrent, ambos con su fecha de "creacion" como nombre 
+            if mkdir "${torrent_file_folder}${fecha_creacion}" && transmission-create -o "${torrent_file_folder}${fecha_creacion}.torrent" "$directorio"; then
+                echo "[$(date "+%Y-%m-%d %H:%M:%S")] El fichero ${torrent_file_folder}${fecha_creacion}.torrent ha sido creado correctamente" | tee -a $torrent_log_file
+            else
+                echo "[$(date "+%Y-%m-%d %H:%M:%S")] El fichero ${torrent_file_folder}${fecha_creacion}.torrent no se ha podido crear. Compruebe su fichero torrent.txt" | tee -a $error_log_file
+            fi
+	    
+	    #Adapta los permisos de ambos para que transmission-cli pueda acceder a ellos sin problema
+            chmod -R 644 "${torrent_file_folder}${fecha_creacion}.torrent"
+            chmod 755 "${torrent_file_folder}${fecha_creacion}"
+        fi
+    done
+    
+    #Una vez hechas todas las comprobaciones, ejecuta el fichero de seedeo de torrents, y se repite el bucle entero cada x minutos, indicado en el fichero de configuracion
+    bash /etc/file_admin/torrent_seeder
+
+    echo "[$(date "+%Y-%m-%d %H:%M:%S")] Esperando ${wait_time} minutos hasta la siguiente ejecucion" | tee -a $torrent_log_file
+    sleep ${wait_time}m  # espera x minutos antes de volver a comprobar
 done
-bash /etc/file_admin/torrent_generator.sh
-sleep ${wait_time}m
+

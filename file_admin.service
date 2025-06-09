@@ -3,15 +3,15 @@ Description=Filegator autotorrent transmission service
 After=network.target
 
 [Service]
-Type=simple  
-user=root
+Type=simple
+User=root
 EnvironmentFile=/etc/file_admin/torrent_conf
 ExecStart=/etc/file_admin/create_torrent
-Restart=always  
-ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=10
 StandardOutput=journal
 StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
-Alias=file_admin.service
+

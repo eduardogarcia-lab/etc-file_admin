@@ -10,7 +10,7 @@ mv etc-file_admin file_admin
 
 cd file_admin
 
-bash install
+bash install (importante como root)
 
 Si tu instalación de FileGator está en otro directorio, deberás modificar las rutas en el archivo install para adaptarlas a tu entorno.
 
