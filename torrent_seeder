@@ -1,0 +1,71 @@
+#!/bin/bash
+
+
+######################################################################################################
+#
+#    Nombre: torrent_seeder 
+#    Descripcion: Encuentra el estado de los torrents y los comparte, para de compartirlos o los borra
+#    Autor: Eduardo García (edugarcia.fpc3@gmail.com)
+#    Fecha de creación: 2025-06-09
+#    Versión: 1.0
+#    Última modificación: 2025-06-09
+#
+######################################################################################################
+source /etc/file_admin/torrent_conf
+
+#Encuentra los ficheros torrent.txt que han sido creados/editados hace menos de ${max_days_transmission} (por defecto hace menos de 2 dias) y saca su fecha de ultima modificacion
+for i in $(find $torrent_repository -name "torrent.txt" -mtime -${max_days_transmission}); do
+        file_trans=$(stat -c %y "$i" | cut -d'.' -f1 | sed 's/ /--/')
+        
+	#Busca que los torrent.txt tengan la transmisión: activa y que no este ya compartiendose
+        if grep -qE "Transmision: activa" $i && ! pgrep -f "${torrent_file_folder}${file_trans}.torrent" > /dev/null; then
+		#En caso de que no lo esté, pone esta configuración en el settings.json del directorio de dicho torrent
+                if [ ! -e "${torrent_file_folder}${file_trans}/settings.json" ]; then
+                        echo '{
+                        "rpc-enabled": true,
+                        "rpc-authentication-required": false,
+                        "lpd-enabled": true,
+                        "utp-enabled": false
+                        }' > "${torrent_file_folder}${file_trans}/settings.json"
+                        chmod 644 "${torrent_file_folder}${file_trans}/settings.json"
+			echo "[$(date "+%Y-%m-%d %H:%M:%S")] Creado el fichero ${torrent_file_folder}${file_trans}/settings.json" | tee -a $torrent_log_file
+                fi
+		
+		#Comparte el torrent de la carpeta donde se encuentre el torrent.txt, con ficheros necesarios para transmitir en su directorio y el torrent correspondiente
+		echo "[$(date "+%Y-%m-%d %H:%M:%S")] Compartiendo el fichero ${torrent_file_folder}${file_trans}.torrent" | tee -a $torrent_log_file
+                transmission-cli \
+                    -w "$(dirname "$(dirname "$i")")" \
+                    -g "${torrent_file_folder}${file_trans}" \
+                    "${torrent_file_folder}${file_trans}.torrent" \
+                    > /dev/null 2>&1 &
+        fi
+done
+
+#En caso de que el torrent este en emisión y su torrent.txt lleve mas de x dias y menos de y dias (por defecto mas de 2 días y menos de 3 días), comprueba si está en emision
+for j in $(find $torrent_repository -name "torrent.txt" -mtime +${max_days_transmission} -mtime -${max_days_on_computer}); do
+        #Fecha para torrents
+	file_stop=$(stat -c %y "$j" | cut -d'.' -f1 | sed 's/ /--/')
+	#Fecha para remodificar el mtime del torrent.txt, para el siguiente apartado
+	file_recomposer=$(stat -c %y "$j" | cut -d'.' -f1)
+	#Comprueba si está en emisión, y si lo está, le cambia el valor al torrent.txt de Transmisión: activa a inactiva
+        if grep -qE "Transmision: activa" $j && ! pgrep -f "${torrent_file_folder}${file_stop}.torrent" > /dev/null; then
+		echo "[$(date "+%Y-%m-%d %H:%M:%S")] Se para de compartir el fichero ${torrent_file_folder}${file_stop}.torrent" | tee -a $torrent_log_file
+                sed -i 's/activa/inactiva/' $j
+		#Le devuelve la fecha de modificación original
+		touch -d "$file_recomposer" "$j"
+		#Para la emisión del torrent
+                pkill -f "${torrent_file_folder}${file_stop}.torrent"
+        fi
+done
+
+#Busca los ficheros torrent.txt que lleven sin modificar mas de x dias (por defecto son más de 3 días)
+for x in $(find $torrent_repository -name "torrent.txt" -mtime +${max_days_on_computer}); do
+        file_del=$(stat -c %y "$x" | cut -d'.' -f1 | sed 's/ /--/')
+	#Si lleva mas de 3 días, borra el torrent.txt, el fichero .torrent y su respectivas carpeta y mapa
+	echo "[$(date "+%Y-%m-%d %H:%M:%S")] Se borran todos los ficheros correspondientes a ${torrent_file_folder}${file_del}.torrent" | tee -a $torrent_log_file
+        rm -f "$x"
+	rm -rf "${torrent_file_folder}${file_del}"
+        rm -f "${torrent_file_folder}${file_del}.torrent"
+        rm -f "${torrent_map_folder}torrent_${file_del}"
+done
+
