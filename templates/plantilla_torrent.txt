@@ -5,9 +5,9 @@
 
 #Para indicar que equipos o aulas van a descargar los ficheros, se indicara
 #De la misma manera, con salto de linea entre cada entrada y de esta manera
-#Equipos: A1 (toda la primera planta)
-#Equipos: A11 (el aula 11 entera)
-#Equipos: A11PC1 (la primera fila del aula 11)
+#Equipos: A1* (toda la primera planta)
+#Equipos: A11* (el aula 11 entera)
+#Equipos: A11PC1* (la primera fila del aula 11)
 #Equipos: A11PC11 (el equipo 11 del aula 11)
 
 Equipos: 
