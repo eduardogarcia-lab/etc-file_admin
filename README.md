@@ -2,6 +2,8 @@ Este es un servicio complementario para el proyecto FileGator de alcalbg (https:
 
 Una vez que tengas todo esto funcionando, tendrás que ejecutar algunos comandos en tu terminal de Linux como root:
 
+apt install transmission-cli (como sudo)
+
 cd /etc/
 
 git clone "https://github.com/eduardogarcia-lab/etc-file_admin"
