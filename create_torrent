@@ -21,6 +21,7 @@ while true; do
     mkdir -p "$torrent_file_folder"
     mkdir -p "$torrent_map_folder"
     
+    
     #Para cada fichero que encuentre en el repositorio con nombre torrent.txt, saca la fecha en la que fue modificado por ultima vez y saca el directorio en el que se encuentra
     for i in $(find $torrent_repository -name "torrent.txt"); do
         fecha_creacion=$(stat -c %y "$i" | cut -d"." -f1 | sed 's/ /--/')

@@ -1,18 +1,23 @@
-#
+#FICHERO DONDE SE ALMACENAN LOS TORENTS
 torrent_file_folder="/var/www/filegator/torrents/"
 
+#FICHERO DONDE SE ALMACENAN LOS MAPAS
 torrent_map_folder="/var/www/filegator/torrents_map_folder/"
 
+#FICHERO DONDE SE ENCUENTRAN LOS ARCHIVOS EN FILEGATOR
 torrent_repository="/var/www/filegator/repository/"
 
+#DIAS MÁXIMOS QUE ESTA UN TORRENT TRANSMITIENDOSE
 max_days_transmission="2"
 
+#DIÁS ANTES DE QUE SE BORRE EL TORRENT
 max_days_on_computer="3"
 
+#MINUTOS QUE PASAN ENTRE EJECUCION Y EJECUCION
 wait_time="1"
 
+#RUTA DE LOS FICHEROS DE LOG
 error_log_file="/var/log/file_admin/error.log"
-
 torrent_log_file="/var/log/file_admin/torrent.log"
 
 

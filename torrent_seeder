@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 ######################################################################################################
 #
 #    Nombre: torrent_seeder 
@@ -22,10 +21,10 @@ for i in $(find $torrent_repository -name "torrent.txt" -mtime -${max_days_trans
 		#En caso de que no lo esté, pone esta configuración en el settings.json del directorio de dicho torrent
                 if [ ! -e "${torrent_file_folder}${file_trans}/settings.json" ]; then
                         echo '{
-                        "rpc-enabled": true,
-                        "rpc-authentication-required": false,
-                        "lpd-enabled": true,
-                        "utp-enabled": false
+			"rpc-enabled": true,
+			"rpc-authentication-required": false,
+			"lpd-enabled": true,
+			"utp-enabled": false
                         }' > "${torrent_file_folder}${file_trans}/settings.json"
                         chmod 644 "${torrent_file_folder}${file_trans}/settings.json"
 			echo "[$(date "+%Y-%m-%d %H:%M:%S")] Creado el fichero ${torrent_file_folder}${file_trans}/settings.json" | tee -a $torrent_log_file
@@ -69,3 +68,11 @@ for x in $(find $torrent_repository -name "torrent.txt" -mtime +${max_days_on_co
         rm -f "${torrent_map_folder}torrent_${file_del}"
 done
 
+#Busca si hay torrents que no tengan fichero torrent.txt por haber sido remplazado y lleven mas de x dias en el equipo. En caso de encontrarlos los borra
+for del in $(find $torrent_file_folder -name "*.torrent" -mtime +$max_days_on_computer); do
+	    core=$(echo $del | cut -d'.' -f1)
+	echo "[$(date "+%Y-%m-%d %H:%M:%S")] Borrando ${torrent_file_folder}${del} y sus correspondientes, demasiado tiempo en el equipo" | tee -a $torrent_log_file
+	rm -f "${torrent_file_folder}${del}" 
+	rm -f "${torrent_map_folder}torrent_${core}"
+	rm -rf "${torrent_file_folder}${core}"
+done	
